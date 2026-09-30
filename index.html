@@ -1,1 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Activité</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eef2ff,
+                    #f8fafc
+                );
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            color: #172033;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 480px;
+
+            background: white;
+
+            border-radius: 24px;
+
+            padding: 35px;
+
+            box-shadow:
+                0 20px 60px
+                rgba(0, 0, 0, 0.10);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+
+            border-radius: 18px;
+
+            background: #4f46e5;
+
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 28px;
+
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+
+            font-size: 28px;
+        }
+
+        p {
+            color: #64748b;
+
+            line-height: 1.5;
+        }
+
+        .activity {
+            background: #eef2ff;
+
+            padding: 16px;
+
+            border-radius: 12px;
+
+            margin: 20px 0;
+
+            color: #3730a3;
+
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+
+            margin-top: 25px;
+            margin-bottom: 8px;
+
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 15px;
+
+            border:
+                1px solid
+                #dbe1ea;
+
+            border-radius: 12px;
+
+            font-size: 16px;
+
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #4f46e5;
+        }
+
+        button {
+            width: 100%;
+
+            border: none;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            margin-top: 15px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: #4f46e5;
+
+            color: white;
+        }
+
+        .primary:hover {
+            background: #4338ca;
+        }
+
+        .anonymous {
+            background: #f1f5f9;
+
+            color: #334155;
+        }
+
+        .anonymous:hover {
+            background: #e2e8f0;
+        }
+
+        .error {
+            background: #fee2e2;
+
+            color: #991b1b;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            margin-top: 15px;
+
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+
+            color: #64748b;
+        }
+
+        .small {
+            font-size: 13px;
+
+            color: #94a3b8;
+
+            margin-top: 20px;
+
+            line-height: 1.5;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+    <!-- CHARGEMENT -->
+
+    <div id="loading" class="loading">
+
+        Chargement de l'activité...
+
+    </div>
+
+
+    <!-- PAGE PRINCIPALE -->
+
+    <div
+        id="content"
+        style="display:none;"
+    >
+
+        <div class="logo">
+            📚
+        </div>
+
+
+        <h1>
+            Prêt à commencer ?
+        </h1>
+
+
+        <p>
+            Indique ton nom pour permettre
+            à ton professeur de savoir qui
+            participe.
+        </p>
+
+
+        <div class="activity">
+
+            Activité :
+
+            <span id="activityName">
+            </span>
+
+        </div>
+
+
+        <!-- NOM -->
+
+        <form id="nameForm">
+
+            <label for="name">
+
+                Nom et prénom
+
+            </label>
+
+
+            <input
+                id="name"
+                type="text"
+                maxlength="100"
+                placeholder="Exemple : Jean Dupont"
+                autocomplete="name"
+            >
+
+
+            <button
+                type="submit"
+                class="primary"
+                id="submitButton"
+            >
+
+                Continuer
+
+            </button>
+
+        </form>
+
+
+        <!-- ANONYME -->
+
+        <button
+            class="anonymous"
+            id="anonymousButton"
+        >
+
+            Continuer anonymement
+
+        </button>
+
+
+        <!-- ERREUR -->
+
+        <div
+            id="error"
+            class="error"
+        >
+        </div>
+
+
+        <div class="small">
+
+            Le choix de ton nom est volontaire.
+            Il permet au professeur de suivre
+            les participations.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="config.js"></script>
+
+
+<script>
+
+    // =====================================================
+    // SUPABASE
+    // =====================================================
+
+    const supabaseClient =
+        supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    // =====================================================
+    // RECUPERATION DU CODE DU LIEN
+    // =====================================================
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const code =
+        params.get("code");
+
+
+    // =====================================================
+    // ELEMENTS
+    // =====================================================
+
+    const loading =
+        document.getElementById(
+            "loading"
+        );
+
+
+    const content =
+        document.getElementById(
+            "content"
+        );
+
+
+    const activityName =
+        document.getElementById(
+            "activityName"
+        );
+
+
+    const nameForm =
+        document.getElementById(
+            "nameForm"
+        );
+
+
+    const nameInput =
+        document.getElementById(
+            "name"
+        );
+
+
+    const submitButton =
+        document.getElementById(
+            "submitButton"
+        );
+
+
+    const anonymousButton =
+        document.getElementById(
+            "anonymousButton"
+        );
+
+
+    const errorBox =
+        document.getElementById(
+            "error"
+        );
+
+
+    // =====================================================
+    // ERREUR
+    // =====================================================
+
+    function showError(message) {
+
+        errorBox.textContent =
+            message;
+
+        errorBox.style.display =
+            "block";
+
+    }
+
+
+    function hideError() {
+
+        errorBox.style.display =
+            "none";
+
+    }
+
+
+    // =====================================================
+    // CHARGER L'ACTIVITE
+    // =====================================================
+
+    async function loadActivity() {
+
+        /*
+         * Si aucun code n'est présent
+         */
+
+        if (!code) {
+
+            loading.textContent =
+                "Lien invalide.";
+
+            return;
+        }
+
+
+        /*
+         * On demande à Supabase :
+         *
+         * "Quelle activité correspond
+         *  à ce code ?"
+         *
+         * Exemple :
+         *
+         * A7K92P
+         *
+         * devient :
+         *
+         * activité = Exercice 1
+         * URL = https://...
+         */
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.rpc(
+                "get_activity",
+                {
+                    p_code: code
+                }
+            );
+
+
+        /*
+         * Code inconnu
+         */
+
+        if (
+            error ||
+            !data ||
+            data.length === 0
+        ) {
+
+            loading.textContent =
+                "Cette activité n'existe pas.";
+
+            return;
+        }
+
+
+        /*
+         * Activité trouvée
+         */
+
+        const activity =
+            data[0];
+
+
+        activityName.textContent =
+            activity.name;
+
+
+        /*
+         * Afficher la page
+         */
+
+        loading.style.display =
+            "none";
+
+        content.style.display =
+            "block";
+
+    }
+
+
+    // =====================================================
+    // ENREGISTRER LA VISITE
+    // =====================================================
+
+    async function sendVisit(
+        name,
+        anonymous
+    ) {
+
+        hideError();
+
+
+        /*
+         * Désactiver les boutons
+         * pendant l'enregistrement
+         */
+
+        submitButton.disabled =
+            true;
+
+        anonymousButton.disabled =
+            true;
+
+
+        /*
+         * Enregistrer la visite
+         */
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.rpc(
+                "record_visit",
+                {
+                    p_code: code,
+
+                    p_name:
+                        anonymous
+                            ? null
+                            : name,
+
+                    p_anonymous:
+                        anonymous
+                }
+            );
+
+
+        /*
+         * Erreur
+         */
+
+        if (error) {
+
+            console.error(error);
+
+
+            submitButton.disabled =
+                false;
+
+            anonymousButton.disabled =
+                false;
+
+
+            if (
+                error.message
+                    .includes(
+                        "NAME_REQUIRED"
+                    )
+            ) {
+
+                showError(
+                    "Merci d'indiquer ton nom."
+                );
+
+            } else {
+
+                showError(
+                    "Impossible d'enregistrer la visite."
+                );
+
+            }
+
+            return;
+        }
+
+
+        /*
+         * REDIRECTION
+         *
+         * Très important :
+         *
+         * Supabase renvoie l'URL
+         * qui appartient à CE code.
+         *
+         * Donc un ancien lien
+         * reste lié à son ancienne activité.
+         */
+
+        if (
+            data &&
+            data.activity_url
+        ) {
+
+            window.location.href =
+                data.activity_url;
+
+        } else {
+
+            showError(
+                "L'activité est introuvable."
+            );
+
+
+            submitButton.disabled =
+                false;
+
+            anonymousButton.disabled =
+                false;
+
+        }
+
+    }
+
+
+    // =====================================================
+    // NOM
+    // =====================================================
+
+    nameForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const name =
+                nameInput.value.trim();
+
+
+            if (!name) {
+
+                showError(
+                    "Entre ton nom et ton prénom."
+                );
+
+                return;
+            }
+
+
+            await sendVisit(
+                name,
+                false
+            );
+
+        }
+    );
+
+
+    // =====================================================
+    // ANONYME
+    // =====================================================
+
+    anonymousButton.addEventListener(
+        "click",
+        async function() {
+
+            await sendVisit(
+                null,
+                true
+            );
+
+        }
+    );
+
+
+    // =====================================================
+    // DEMARRAGE
+    // =====================================================
+
+    loadActivity();
+
+</script>
+
+</body>
+
+</html>
