@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="de">
 
 <head>
 
@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Activité</title>
+    <title>Aktivität</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -216,16 +216,16 @@
 
 <div class="card">
 
-    <!-- CHARGEMENT -->
+    <!-- LADEN -->
 
     <div id="loading" class="loading">
 
-        Chargement de l'activité...
+        Aktivität wird geladen...
 
     </div>
 
 
-    <!-- PAGE PRINCIPALE -->
+    <!-- HAUPTSEITE -->
 
     <div
         id="content"
@@ -238,20 +238,19 @@
 
 
         <h1>
-            Prêt à commencer ?
+            Bereit zum Starten?
         </h1>
 
 
         <p>
-            Indique ton nom pour permettre
-            à ton professeur de savoir qui
-            participe.
+            Gib deinen Namen ein, damit dein Lehrer
+            sehen kann, wer teilnimmt.
         </p>
 
 
         <div class="activity">
 
-            Activité :
+            Aktivität:
 
             <span id="activityName">
             </span>
@@ -259,13 +258,13 @@
         </div>
 
 
-        <!-- NOM -->
+        <!-- NAME -->
 
         <form id="nameForm">
 
             <label for="name">
 
-                Nom et prénom
+                Vor- und Nachname
 
             </label>
 
@@ -274,7 +273,7 @@
                 id="name"
                 type="text"
                 maxlength="100"
-                placeholder="Exemple : Jean Dupont"
+                placeholder="Beispiel: Max Mustermann"
                 autocomplete="name"
             >
 
@@ -285,26 +284,26 @@
                 id="submitButton"
             >
 
-                Continuer
+                Weiter
 
             </button>
 
         </form>
 
 
-        <!-- ANONYME -->
+        <!-- ANONYM -->
 
         <button
             class="anonymous"
             id="anonymousButton"
         >
 
-            Continuer anonymement
+            Anonym weiter
 
         </button>
 
 
-        <!-- ERREUR -->
+        <!-- FEHLER -->
 
         <div
             id="error"
@@ -315,9 +314,8 @@
 
         <div class="small">
 
-            Le choix de ton nom est volontaire.
-            Il permet au professeur de suivre
-            les participations.
+            Die Angabe deines Namens ist freiwillig.
+            Sie hilft dem Lehrer, die Teilnahmen zu verfolgen.
 
         </div>
 
@@ -343,7 +341,7 @@
 
 
     // =====================================================
-    // RECUPERATION DU CODE DU LIEN
+    // CODE DES LINKS ERMITTELN
     // =====================================================
 
     const params =
@@ -357,7 +355,7 @@
 
 
     // =====================================================
-    // ELEMENTS
+    // ELEMENTE
     // =====================================================
 
     const loading =
@@ -409,7 +407,7 @@
 
 
     // =====================================================
-    // ERREUR
+    // FEHLER
     // =====================================================
 
     function showError(message) {
@@ -432,37 +430,36 @@
 
 
     // =====================================================
-    // CHARGER L'ACTIVITE
+    // AKTIVITÄT LADEN
     // =====================================================
 
     async function loadActivity() {
 
         /*
-         * Si aucun code n'est présent
+         * Wenn kein Code vorhanden ist
          */
 
         if (!code) {
 
             loading.textContent =
-                "Lien invalide.";
+                "Ungültiger Link.";
 
             return;
         }
 
 
         /*
-         * On demande à Supabase :
+         * Wir fragen Supabase:
          *
-         * "Quelle activité correspond
-         *  à ce code ?"
+         * "Welche Aktivität gehört zu diesem Code?"
          *
-         * Exemple :
+         * Beispiel:
          *
          * A7K92P
          *
-         * devient :
+         * wird:
          *
-         * activité = Exercice 1
+         * Aktivität = Übung 1
          * URL = https://...
          */
 
@@ -479,7 +476,7 @@
 
 
         /*
-         * Code inconnu
+         * Unbekannter Code
          */
 
         if (
@@ -489,14 +486,14 @@
         ) {
 
             loading.textContent =
-                "Cette activité n'existe pas.";
+                "Diese Aktivität existiert nicht.";
 
             return;
         }
 
 
         /*
-         * Activité trouvée
+         * Aktivität gefunden
          */
 
         const activity =
@@ -508,7 +505,7 @@
 
 
         /*
-         * Afficher la page
+         * Seite anzeigen
          */
 
         loading.style.display =
@@ -521,7 +518,7 @@
 
 
     // =====================================================
-    // ENREGISTRER LA VISITE
+    // TEILNAHME SPEICHERN
     // =====================================================
 
     async function sendVisit(
@@ -533,8 +530,8 @@
 
 
         /*
-         * Désactiver les boutons
-         * pendant l'enregistrement
+         * Buttons deaktivieren,
+         * während die Teilnahme gespeichert wird
          */
 
         submitButton.disabled =
@@ -545,7 +542,7 @@
 
 
         /*
-         * Enregistrer la visite
+         * Teilnahme speichern
          */
 
         const {
@@ -569,7 +566,7 @@
 
 
         /*
-         * Erreur
+         * Fehler
          */
 
         if (error) {
@@ -592,13 +589,13 @@
             ) {
 
                 showError(
-                    "Merci d'indiquer ton nom."
+                    "Bitte gib deinen Namen an."
                 );
 
             } else {
 
                 showError(
-                    "Impossible d'enregistrer la visite."
+                    "Die Teilnahme konnte nicht gespeichert werden."
                 );
 
             }
@@ -608,15 +605,15 @@
 
 
         /*
-         * REDIRECTION
+         * WEITERLEITUNG
          *
-         * Très important :
+         * Wichtig:
          *
-         * Supabase renvoie l'URL
-         * qui appartient à CE code.
+         * Supabase gibt die URL zurück,
+         * die zu diesem Code gehört.
          *
-         * Donc un ancien lien
-         * reste lié à son ancienne activité.
+         * Deshalb bleibt ein alter Link
+         * weiterhin mit der alten Aktivität verknüpft.
          */
 
         if (
@@ -630,7 +627,7 @@
         } else {
 
             showError(
-                "L'activité est introuvable."
+                "Die Aktivität wurde nicht gefunden."
             );
 
 
@@ -646,7 +643,7 @@
 
 
     // =====================================================
-    // NOM
+    // NAME
     // =====================================================
 
     nameForm.addEventListener(
@@ -663,7 +660,7 @@
             if (!name) {
 
                 showError(
-                    "Entre ton nom et ton prénom."
+                    "Bitte gib deinen Vor- und Nachnamen ein."
                 );
 
                 return;
@@ -680,7 +677,7 @@
 
 
     // =====================================================
-    // ANONYME
+    // ANONYM
     // =====================================================
 
     anonymousButton.addEventListener(
@@ -697,7 +694,7 @@
 
 
     // =====================================================
-    // DEMARRAGE
+    // START
     // =====================================================
 
     loadActivity();
